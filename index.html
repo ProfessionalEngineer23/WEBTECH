@@ -7,41 +7,34 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      background-color: #f0f2f5;
+      background: #f4f4f4;
     }
+
     .container {
       display: flex;
       min-height: 100vh;
     }
+
     .sidebar {
-      width: 100px;
-      background-color: #222;
+      width: 80px;
+      background: #222;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-top: 5rem;
+      padding-top: 2rem;
       position: fixed;
-      left: -120px;
-      top: 0;
       height: 100%;
-      transition: left 0.3s ease;
-      z-index: 1000;
     }
-    .sidebar.show {
-      left: 0;
-    }
+
     .sidebar-toggle {
       position: fixed;
       top: 20px;
       left: 10px;
       z-index: 1100;
-      background-color: #222;
+      background: #222;
       color: white;
       border: none;
       font-size: 24px;
@@ -49,78 +42,43 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    .sidebar button {
-      background-color: #444;
-      color: white;
-      border: none;
-      margin: 10px 0;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1rem;
-    }
+
     .main {
       margin-left: 100px;
       flex: 1;
       padding: 20px;
     }
+
     .section-title {
       font-size: 24px;
-      font-weight: bold;
       margin-bottom: 20px;
     }
+
     .sensor-grid {
       display: grid;
-      grid-template-areas:
-        'co smoke temp humidity light'
-        'motion water . . .';
-      grid-template-columns: repeat(5, 1fr);
-      gap: 16px;
-      margin-bottom: 30px;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
     }
-    .sensor-card:nth-child(1) { grid-area: co; }
-    .sensor-card:nth-child(2) { grid-area: smoke; }
-    .sensor-card:nth-child(3) { grid-area: temp; }
-    .sensor-card:nth-child(4) { grid-area: humidity; }
-    .sensor-card:nth-child(5) { grid-area: light; }
-    .sensor-card:nth-child(6) { grid-area: motion; }
-    .sensor-card:nth-child(7) { grid-area: water; }
 
     .sensor-card {
-      background-color: #ffffff;
-      border-radius: 20px;
-      padding: 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 12px;
       text-align: center;
-      font-size: 16px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
-    .ok { background-color: #d2f8d2; }
-    .alert { background-color: #f8d2d2; }
-    .info { background-color: #d2e4f8; }
-    .warning { background-color: #f8ecd2; }
 
     .graph-compare-wrapper {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
+      margin-top: 30px;
     }
-    .panel {
-      background-color: white;
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
-    }
-    .panel.graph { flex: 1; min-width: 300px; }
-    .panel.compare { flex: 1; min-width: 300px; }
 
     select, button {
-      padding: 8px;
       margin: 5px;
-      border-radius: 10px;
+      padding: 8px;
+      border-radius: 8px;
       border: 1px solid #ccc;
     }
+
     canvas {
       margin-top: 20px;
       max-width: 100%;
@@ -140,20 +98,18 @@
       <div class="section-title" id="houseTitle">Overview: Seaview1</div>
 
       <div class="sensor-grid">
-        <div class="sensor-card warning">CO:<br>6.33 PPM</div>
-        <div class="sensor-card ok">Smoke:<br>No smoke</div>
-        <div class="sensor-card info">Temp:<br>22°C</div>
-        <div class="sensor-card warning">Humidity:<br>40%</div>
-        <div class="sensor-card ok">Light:<br>300 Lux</div>
-        <div class="sensor-card alert">Motion:<br>Detected</div>
-        <div class="sensor-card ok">Water:<br>No leak</div>
+        <div class="sensor-card" id="coSensor">CO:<br>Loading...</div>
+        <div class="sensor-card" id="smokeSensor">Smoke:<br>Loading...</div>
+        <div class="sensor-card" id="tempSensor">Temp:<br>Loading...</div>
+        <div class="sensor-card" id="humiditySensor">Humidity:<br>Loading...</div>
+        <div class="sensor-card" id="lightSensor">Light:<br>Loading...</div>
+        <div class="sensor-card" id="motionSensor">Motion:<br>Loading...</div>
+        <div class="sensor-card" id="waterSensor">Water:<br>Loading...</div>
       </div>
 
       <div class="graph-compare-wrapper">
         <div class="panel graph">
           <h3>📊 View Graphs</h3>
-          <label>House:</label>
-         
           <label>Sensor:</label>
           <select id="sensorSelect">
             <option value="CO">CO</option>
@@ -172,67 +128,91 @@
           <button id="generateGraph">Generate</button>
           <canvas id="sensorGraph"></canvas>
         </div>
-
-        <div class="panel compare">
-          <h3>🔁 Compare Data</h3>
-          <label>House 1:</label>
-          <select id="compareHouse1">
-            <option value="Seaview1">Seaview1</option>
-            <option value="Seaview2">Seaview2</option>
-            <option value="Seaview3">Seaview3</option>
-          </select>
-          <label>Sensor:</label>
-          <select id="compareSensor">
-            <option value="Humidity">Humidity</option>
-            <option value="Temperature">Temperature</option>
-          </select>
-          <label>House 2:</label>
-          <select id="compareHouse2">
-            <option value="Seaview1">Seaview1</option>
-            <option value="Seaview2">Seaview2</option>
-            <option value="Seaview3">Seaview3</option>
-          </select>
-          <button id="compareGraph">Compare</button>
-          <canvas id="comparisonChart"></canvas>
-        </div>
       </div>
     </div>
   </div>
 
   <script>
-    document.getElementById('toggleSidebar').addEventListener('click', function () {
-      document.getElementById('sidebar').classList.toggle('show');
+    let selectedHouse = "Seaview1";
+
+    // Toggle sidebar
+    document.getElementById("toggleSidebar").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("show");
     });
 
-    document.querySelectorAll('.house-button').forEach(button => {
-      button.addEventListener('click', function () {
-        const houseName = this.getAttribute('data-house');
-        document.getElementById('houseTitle').textContent = `Overview: ${houseName}`;
-        document.getElementById('houseSelect').value = houseName;
+    // Switch between houses
+    document.querySelectorAll(".house-button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        selectedHouse = btn.dataset.house;
+        document.getElementById("houseTitle").textContent = `Overview: ${selectedHouse}`;
+        fetchSensorValues();
       });
     });
 
-    const ctx = document.getElementById('sensorGraph').getContext('2d');
+    // Load latest sensor values
+    async function fetchSensorValues() {
+      try {
+        const res = await fetch(`/api/latest?house=${selectedHouse}`);
+        const data = await res.json();
+
+        document.getElementById("coSensor").innerHTML = `CO:<br>${data.CO} PPM`;
+        document.getElementById("smokeSensor").innerHTML = `Smoke:<br>${data.Smoke}`;
+        document.getElementById("tempSensor").innerHTML = `Temp:<br>${data.Temperature}°C`;
+        document.getElementById("humiditySensor").innerHTML = `Humidity:<br>${data.Humidity}%`;
+        document.getElementById("lightSensor").innerHTML = `Light:<br>${data.Light} Lux`;
+        document.getElementById("motionSensor").innerHTML = `Motion:<br>${data.Motion}`;
+        document.getElementById("waterSensor").innerHTML = `Water:<br>${data.Water}`;
+      } catch (err) {
+        console.error("Failed to load sensor data:", err);
+      }
+    }
+
+    // Chart setup
+    const ctx = document.getElementById("sensorGraph").getContext("2d");
     const sensorChart = new Chart(ctx, {
-      type: 'line',
+      type: "line",
       data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        labels: [],
         datasets: [{
-          label: 'Temperature (°C)',
-          data: [21, 22, 23, 24, 22, 21, 20],
-          borderColor: 'rgba(75, 192, 192, 1)',
-          tension: 0.4,
-          fill: false
+          label: "Sensor Data",
+          data: [],
+          borderColor: "rgba(0,123,255,1)",
+          fill: false,
+          tension: 0.4
         }]
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'Sensor Data' }
+          legend: { position: "top" },
+          title: { display: true, text: "Sensor Data" }
         }
       }
     });
+
+    // Load graph based on user selection
+    document.getElementById("generateGraph").addEventListener("click", async () => {
+      const sensor = document.getElementById("sensorSelect").value;
+      const days = document.getElementById("timeRange").value;
+
+      try {
+        const res = await fetch(`/api/sensor-data?house=${selectedHouse}&sensor=${sensor}&days=${days}`);
+        const data = await res.json();
+
+        const labels = data.map(e => e.timestamp);
+        const values = data.map(e => e.value);
+
+        sensorChart.data.labels = labels;
+        sensorChart.data.datasets[0].label = `${sensor} over Time`;
+        sensorChart.data.datasets[0].data = values;
+        sensorChart.update();
+      } catch (err) {
+        console.error("Failed to load graph data:", err);
+      }
+    });
+
+    // Initial load
+    fetchSensorValues();
   </script>
 </body>
 </html>
