@@ -27,6 +27,12 @@
       padding-top: 2rem;
       position: fixed;
       height: 100%;
+      left: -100px;
+      transition: left 0.3s ease;
+    }
+
+    .sidebar.show {
+      left: 0;
     }
 
     .sidebar-toggle {
@@ -47,6 +53,7 @@
       margin-left: 100px;
       flex: 1;
       padding: 20px;
+      transition: margin-left 0.3s ease;
     }
 
     .section-title {
@@ -69,7 +76,19 @@
     }
 
     .graph-compare-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
       margin-top: 30px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      flex: 1;
+      min-width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     select, button {
@@ -94,6 +113,7 @@
       <button class="house-button" data-house="Seaview2">2</button>
       <button class="house-button" data-house="Seaview3">3</button>
     </div>
+
     <div class="main">
       <div class="section-title" id="houseTitle">Overview: Seaview1</div>
 
@@ -108,7 +128,7 @@
       </div>
 
       <div class="graph-compare-wrapper">
-        <div class="panel graph">
+        <div class="panel">
           <h3>📊 View Graphs</h3>
           <label>Sensor:</label>
           <select id="sensorSelect">
@@ -128,6 +148,29 @@
           <button id="generateGraph">Generate</button>
           <canvas id="sensorGraph"></canvas>
         </div>
+
+        <div class="panel">
+          <h3>🔁 Compare Houses</h3>
+          <label>House 1:</label>
+          <select id="compareHouse1">
+            <option value="Seaview1">Seaview1</option>
+            <option value="Seaview2">Seaview2</option>
+            <option value="Seaview3">Seaview3</option>
+          </select>
+          <label>Sensor:</label>
+          <select id="compareSensor">
+            <option value="Temperature">Temperature</option>
+            <option value="Humidity">Humidity</option>
+          </select>
+          <label>House 2:</label>
+          <select id="compareHouse2">
+            <option value="Seaview1">Seaview1</option>
+            <option value="Seaview2">Seaview2</option>
+            <option value="Seaview3">Seaview3</option>
+          </select>
+          <button id="compareGraph">Compare</button>
+          <canvas id="comparisonChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -135,12 +178,10 @@
   <script>
     let selectedHouse = "Seaview1";
 
-    // Toggle sidebar
     document.getElementById("toggleSidebar").addEventListener("click", () => {
       document.getElementById("sidebar").classList.toggle("show");
     });
 
-    // Switch between houses
     document.querySelectorAll(".house-button").forEach(btn => {
       btn.addEventListener("click", () => {
         selectedHouse = btn.dataset.house;
@@ -149,25 +190,27 @@
       });
     });
 
-    // Load latest sensor values
-    async function fetchSensorValues() {
-      try {
-        const res = await fetch(`/api/latest?house=${selectedHouse}`);
-        const data = await res.json();
+    function fetchSensorValues() {
+      // Simulated sensor values for testing
+      const data = {
+        CO: (5 + Math.random() * 3).toFixed(2),
+        Smoke: "None",
+        Temperature: (20 + Math.random() * 4).toFixed(1),
+        Humidity: (35 + Math.random() * 10).toFixed(1),
+        Light: (250 + Math.random() * 100).toFixed(0),
+        Motion: Math.random() > 0.5 ? "Detected" : "None",
+        Water: "No Leak"
+      };
 
-        document.getElementById("coSensor").innerHTML = `CO:<br>${data.CO} PPM`;
-        document.getElementById("smokeSensor").innerHTML = `Smoke:<br>${data.Smoke}`;
-        document.getElementById("tempSensor").innerHTML = `Temp:<br>${data.Temperature}°C`;
-        document.getElementById("humiditySensor").innerHTML = `Humidity:<br>${data.Humidity}%`;
-        document.getElementById("lightSensor").innerHTML = `Light:<br>${data.Light} Lux`;
-        document.getElementById("motionSensor").innerHTML = `Motion:<br>${data.Motion}`;
-        document.getElementById("waterSensor").innerHTML = `Water:<br>${data.Water}`;
-      } catch (err) {
-        console.error("Failed to load sensor data:", err);
-      }
+      document.getElementById("coSensor").innerHTML = `CO:<br>${data.CO} PPM`;
+      document.getElementById("smokeSensor").innerHTML = `Smoke:<br>${data.Smoke}`;
+      document.getElementById("tempSensor").innerHTML = `Temp:<br>${data.Temperature}°C`;
+      document.getElementById("humiditySensor").innerHTML = `Humidity:<br>${data.Humidity}%`;
+      document.getElementById("lightSensor").innerHTML = `Light:<br>${data.Light} Lux`;
+      document.getElementById("motionSensor").innerHTML = `Motion:<br>${data.Motion}`;
+      document.getElementById("waterSensor").innerHTML = `Water:<br>${data.Water}`;
     }
 
-    // Chart setup
     const ctx = document.getElementById("sensorGraph").getContext("2d");
     const sensorChart = new Chart(ctx, {
       type: "line",
@@ -184,35 +227,65 @@
       options: {
         responsive: true,
         plugins: {
-          legend: { position: "top" },
           title: { display: true, text: "Sensor Data" }
         }
       }
     });
 
-    // Load graph based on user selection
-    document.getElementById("generateGraph").addEventListener("click", async () => {
+    document.getElementById("generateGraph").addEventListener("click", () => {
       const sensor = document.getElementById("sensorSelect").value;
-      const days = document.getElementById("timeRange").value;
+      const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      const data = labels.map(() => (20 + Math.random() * 5).toFixed(1));
 
-      try {
-        const res = await fetch(`/api/sensor-data?house=${selectedHouse}&sensor=${sensor}&days=${days}`);
-        const data = await res.json();
+      sensorChart.data.labels = labels;
+      sensorChart.data.datasets[0].label = `${sensor} over Time`;
+      sensorChart.data.datasets[0].data = data;
+      sensorChart.update();
+    });
 
-        const labels = data.map(e => e.timestamp);
-        const values = data.map(e => e.value);
-
-        sensorChart.data.labels = labels;
-        sensorChart.data.datasets[0].label = `${sensor} over Time`;
-        sensorChart.data.datasets[0].data = values;
-        sensorChart.update();
-      } catch (err) {
-        console.error("Failed to load graph data:", err);
+    const ctxCompare = document.getElementById("comparisonChart").getContext("2d");
+    const compareChart = new Chart(ctxCompare, {
+      type: "line",
+      data: {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: []
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: "Compare Houses" }
+        }
       }
     });
 
-    // Initial load
-    fetchSensorValues();
+    document.getElementById("compareGraph").addEventListener("click", () => {
+      const house1 = document.getElementById("compareHouse1").value;
+      const house2 = document.getElementById("compareHouse2").value;
+      const sensor = document.getElementById("compareSensor").value;
+      const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+      const data1 = labels.map(() => (20 + Math.random() * 3).toFixed(1));
+      const data2 = labels.map(() => (21 + Math.random() * 3).toFixed(1));
+
+      compareChart.data.labels = labels;
+      compareChart.data.datasets = [
+        {
+          label: `${sensor} - ${house1}`,
+          data: data1,
+          borderColor: "rgba(255,99,132,1)",
+          fill: false
+        },
+        {
+          label: `${sensor} - ${house2}`,
+          data: data2,
+          borderColor: "rgba(54,162,235,1)",
+          fill: false
+        }
+      ];
+      compareChart.update();
+    });
+
+    fetchSensorValues(); // load Seaview1 by default
   </script>
 </body>
 </html>
