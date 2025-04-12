@@ -1,0 +1,59 @@
+.container 
+{ 
+    max-width: 1200px; 
+    margin: 2rem auto; 
+}
+
+.error 
+{ 
+    color: #dc3545; 
+    padding: 1rem; 
+    background: #f8d7da; 
+    border-radius: 0.25rem; 
+}
+
+.building-list 
+{ 
+    list-style: none; 
+    padding: 0; 
+}
+
+.building-list li 
+{ 
+    margin: 0.5rem 0; 
+}
+
+.building-list a 
+{ 
+display: block; 
+padding: 0.75rem 1rem; 
+background: #f8f9fa; 
+border-radius: 0.25rem; 
+text-decoration: none; 
+color: #212529;
+transition: background 0.2s;
+}
+
+.building-list a:hover 
+{ 
+    background: #e9ecef; 
+}
+
+.sensor-card 
+{ 
+padding: 1rem; 
+margin: 1rem 0; 
+background: #f8f9fa; 
+border-radius: 0.25rem; 
+}
+
+.sensor-value 
+{ 
+    font-size: 1.5rem; 
+    font-weight: bold; 
+}
+
+#sensorChart 
+{ 
+    margin-top: 2rem; 
+}

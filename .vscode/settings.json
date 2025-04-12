@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/f2418094-8933-4e73-8b18-156cce85a766/resourceGroups/MIS-ERM/providers/Microsoft.Web/sites/WebtechCA03",
+    "appService.deploySubpath": "Server-side demo code"
+}
