@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Building Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Sidebar Toggle Button -->
+  <button class="sidebar-toggle" id="toggleSidebar">☰</button>
+
+  <div class="container">
+    <div class="sidebar" id="sidebar">
+      <button disabled>🏠</button>
+      <button class="house-button" data-house="Seaview1">Seaview1</button>
+      <button class="house-button" data-house="Seaview2">Seaview2</button>
+      <button class="house-button" data-house="Seaview3">Seaview3</button>
+    </div>
+
+    <div class="main">
+      <div class="section-title" id="houseTitle">Overview: Seaview1</div>
+
+      <!-- Sensor Grid -->
+      <div class="sensor-grid">
+        <div class="sensor-card" id="coSensor">CO:<br><span class="loading">Loading...</span></div>
+        <div class="sensor-card" id="smokeSensor">Smoke:<br><span class="loading">Loading...</span></div>
+        <div class="sensor-card" id="tempSensor">Temp:<br><span class="loading">Loading...</span></div>
+        <div class="sensor-card" id="motionSensor">Motion:<br><span class="loading">Loading...</span></div>
+        <div class="sensor-card" id="waterSensor">Water:<br><span class="loading">Loading...</span></div>
+        <div class="sensor-card" id="humiditySensor">Humidity:<br><span class="loading">Loading...</span></div>
+        <div class="sensor-card" id="lightSensor">Light:<br><span class="loading">Loading...</span></div>
+      </div>
+
+      <!-- Graph & Compare Side-by-Side -->
+      <div class="panel-container">
+        <div class="panel">
+          <h3>📊 View Graphs</h3>
+          <label>Sensor:</label>
+          <select id="sensorSelect">
+            <option value="Temperature">Temperature</option>
+            <option value="Humidity">Humidity</option>
+            <option value="CO">CO</option>
+            <option value="Smoke">Smoke</option>
+            <option value="Light">Light</option>
+            <option value="Motion">Motion</option>
+            <option value="Water">Water</option>
+          </select>
+          <label>Time:</label>
+          <select id="timeRange">
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+          </select>
+          <button id="generateGraph">Generate</button>
+          <canvas id="sensorGraph"></canvas>
+        </div>
+
+        <div class="panel">
+          <h3>🔁 Compare Houses</h3>
+          <label>House 1:</label>
+          <select id="compareHouse1">
+            <option value="Seaview1">Seaview1</option>
+            <option value="Seaview2">Seaview2</option>
+            <option value="Seaview3">Seaview3</option>
+          </select>
+          <label>Sensor:</label>
+          <select id="compareSensor">
+            <option value="Temperature">Temperature</option>
+            <option value="Humidity">Humidity</option>
+            <option value="CO">CO</option>
+            <option value="Smoke">Smoke</option>
+            <option value="Light">Light</option>
+            <option value="Motion">Motion</option>
+            <option value="Water">Water</option>
+          </select>
+          <label>House 2:</label>
+          <select id="compareHouse2">
+            <option value="Seaview1">Seaview1</option>
+            <option value="Seaview2">Seaview2</option>
+            <option value="Seaview3">Seaview3</option>
+          </select>
+          <button id="compareGraph">Compare</button>
+          <canvas id="comparisonChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
