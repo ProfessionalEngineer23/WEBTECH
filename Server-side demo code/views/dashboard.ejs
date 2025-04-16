@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Building Monitoring</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Smart Building Monitoring Dashboard</h1>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label for="building">Building:</label>
+        <select id="building">
+          <option value="1">Seaview1</option>
+          <option value="2">Seaview2</option>
+          <option value="3">Seaview3</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="sensor">Sensor:</label>
+        <select id="sensor">
+          <option value="Temperature">Temperature</option>
+          <option value="Humidity">Humidity</option>
+          <option value="CO">CO Level</option>
+          <option value="Smoke">Smoke Detection</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="timeRange">Time Range:</label>
+        <select id="timeRange">
+          <option value="1">Last 24 hours</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+        </select>
+      </div>
+      
+      <button id="updateChart">Update Chart</button>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="sensorChart"></canvas>
+    </div>
+    
+    <div class="current-readings">
+      <h2>Current Readings</h2>
+      <div id="currentData"></div>
+    </div>
+  </div>
+  
+  <script src="/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= tableName %> - Azure SQL Database Viewer</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Table: <%= schema %>.<%= tableName %></h1>
+    <p><a href="/" class="back-link">← Back to tables list</a></p>
+    
+    <% if (error) { %>
+      <div class="error">
+        <h3>Error:</h3>
+        <p><%= error %></p>
+      </div>
+    <% } else if (data && data.length > 0) { %>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <% Object.keys(data[0]).forEach(column => { %>
+                <th><%= column %></th>
+              <% }); %>
+            </tr>
+          </thead>
+          <tbody>
+            <% data.forEach(row => { %>
+              <tr>
+                <% Object.values(row).forEach(value => { %>
+                  <td><%= value !== null ? value : 'NULL' %></td>
+                <% }); %>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Showing up to 50 rows</p>
+    <% } else { %>
+      <p>No data found in this table.</p>
+    <% } %>
+  </div>
+</body>
+</html>
+

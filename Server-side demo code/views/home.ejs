@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azure SQL Database Viewer</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Azure SQL Database Tables</h1>
+    <!-- Add this near the <h1> in home.ejs -->
+    <div class="nav-buttons">
+      <a href="/dashboard" class="dashboard-link">View Monitoring Dashboard</a>
+    </div>
+    
+    <% if (error) { %>
+      <div class="error">
+        <h3>Error connecting to database:</h3>
+        <p><%= error %></p>
+      </div>
+    <% } else if (tables && tables.length > 0) { %>
+      <ul class="tables-list">
+        <% tables.forEach(table => { %>
+          <li>
+            <a href="/table/<%= table.TABLE_SCHEMA %>/<%= table.TABLE_NAME %>">
+              <%= table.TABLE_SCHEMA %>.<%= table.TABLE_NAME %>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    <% } else { %>
+      <p>No tables found in the database.</p>
+    <% } %>
+  </div>
+</body>
+</html>
+
