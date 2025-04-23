@@ -1,186 +1,80 @@
-// Import required modules
-import express from "express" //imports the express framework that handles routes, HTTP requests, and responses
-import sql from "mssql" //mssql allowsmy app to connect to the sql database on azure
-import path from "path" //A Node.js utility for working with file and directory paths.
-import { fileURLToPath } from "url" //converts url string to file path
+import express from 'express';
+import sql from 'mssql';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import cors from 'cors';
 
-// Set up __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url) //contains absolute path to my server.js file
-const __dirname = path.dirname(__filename) //contains directory path to my server.js
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Create Express application
-const app = express()
-const PORT = process.env.PORT || 3000 //sets up either an environment variable or port 3000
+// Middleware
+app.use(cors());
 
-// Database configuration using environment variables
-// tells mssql module how to connect to database
 const dbConfig = {
-  server: process.env.AZURE_SQL_SERVER, // Your Azure SQL server name
-  database: process.env.AZURE_SQL_DATABASE, // Your database name
-  user: process.env.AZURE_SQL_USER, // Your username
-  password: process.env.AZURE_SQL_PASSWORD, // Your password
+  server: 'webtech25.database.windows.net', // Azure SQL Server name
+  database: 'Project',
+  user: 'Dovydas232',
+  password: 'Webtech25',
   options: {
-    encrypt: true, // Required for Azure SQL
-    trustServerCertificate: false, // Don't trust self-signed certificates
-  },
-}
-
-// Set up the view engine
-app.set("view engine", "ejs") //sets up ejs as the template engine
-app.set("views", path.join(__dirname, "views")) //view path to find template files (client side programs)
-
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, "public")))
-
-// Home route - Show list of tables
-app.get("/", async (req, res) => {
-  try {
-    // Connect to the database
-    console.log("Connecting to database...")
-    await sql.connect(dbConfig)
-
-    // Query to get all tables
-    const result = await sql.query`
-      SELECT TABLE_SCHEMA, TABLE_NAME 
-      FROM INFORMATION_SCHEMA.TABLES 
-      WHERE TABLE_TYPE = 'BASE TABLE'
-      ORDER BY TABLE_SCHEMA, TABLE_NAME
-    `
-
-    // Render the home page with the list of tables
-    // if an error occurs, print it and send out empty tables
-    res.render("home", {
-      tables: result.recordset,
-      error: null,
-    })
-  } catch (err) {
-    console.error("Database error:", err)
-    res.render("home", {
-      tables: [],
-      error: err.message,
-    })
-  } finally {
-    // Close the connection
-    sql.close()
+    encrypt: true, // Required for Azure
+    trustServerCertificate: false
   }
-})
+};
 
-app.get("/dashboard", async (req, res) => {
+// Serve static files (your HTML, CSS, JS)
+app.use(express.static('public'));
+
+app.get('/test-connection', async (req, res) => {
   try {
-    res.render("dashboard", {
-      schema,
-      tableName: name,
-      data: result.recordset,
-      error: null,
-    });
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request().query('SELECT 1 as test');
+    res.send('Database connection successful!');
+    pool.close();
   } catch (err) {
-    console.error("Dashboard error:", err);
-    res.status(500).send("Error loading dashboard");
+    res.status(500).send('Connection failed: ' + err.message);
   }
 });
 
-// Route to view table data
-app.get("/table/:schema/:name", async (req, res) => {
-  const { schema, name } = req.params
-
-  try {
-    // Connect to the database
-    await sql.connect(dbConfig)
-
-    //creats a new database request object
-    //Then directly inserts schema and name
-    const request = new sql.Request();
-    const result = await request.query(`SELECT TOP 50 * FROM [${schema}].[${name}]`);
-
-    // Render the table view with the data inside
-    res.render("table", {
-      schema,
-      tableName: name,
-      data: result.recordset,
-      error: null,
-    })
-  } catch (err) {
-    console.error("Database error:", err)
-    res.render("table", {
-      schema,
-      tableName: name,
-      data: [],
-      error: err.message,
-    })
-  } finally {
-    // Close the connection
-    sql.close()
-  }
-})
-
-// API endpoint for historical sensor data
-app.get("/api/sensor-data", async (req, res) => {
-  const { building, sensor, days } = req.query;
-
-  try {
-    await sql.connect(dbConfig);
-    const request = new sql.Request();
-    
-    const result = await request.query(`
-      SELECT 
-        ReadingTime as timestamp,
-        ReadingValue as value
-      FROM SensorReadings
-      WHERE BuildingID = @building
-        AND SensorType = @sensor
-        AND ReadingTime >= DATEADD(day, -@days, GETDATE())
-      ORDER BY ReadingTime
-    `, {
-      building: parseInt(building),
-      sensor: sensor,
-      days: parseInt(days)
-    });
-
-    res.json(result.recordset);
-  } catch (err) {
-    console.error("API error:", err);
-    res.status(500).json({ error: err.message });
-  } finally {
-    sql.close();
-  }
+app.get('/view-data', async (req, res) => {
+  const pool = await sql.connect(dbConfig);
+  const buildings = await pool.request().query('SELECT * FROM BUILDING');
+  const sensors = await pool.request().query('SELECT * FROM SENSOR');
+  const readings = await pool.request().query('SELECT TOP 10 * FROM SENSOR_READING ORDER BY Reading_Date_Time DESC');
+  const user = await pool.request().query('Select * From User_Data');
+  const reportpreference = await pool.request().query('Select * From Report_Preference');
+  res.json({
+    buildings: buildings.recordset,
+    sensors: sensors.recordset,
+    recentReadings: readings.recordset,
+    user: user.recordset,
+    reportpreference: reportpreference.recordset
+  });
 });
 
-// API endpoint for current readings
-app.get("/api/current-readings", async (req, res) => {
-  const { building } = req.query;
-
+app.get('/api/full-database', async (req, res) => {
   try {
-    await sql.connect(dbConfig);
-    const request = new sql.Request();
+    const pool = await sql.connect(dbConfig);
     
-    const result = await request.query(`
-      SELECT 
-        SensorType,
-        ReadingValue
-      FROM SensorReadings
-      WHERE BuildingID = @building
-        AND ReadingTime = (
-          SELECT MAX(ReadingTime) 
-          FROM SensorReadings 
-          WHERE BuildingID = @building
-        )
-    `, { building: parseInt(building) });
-
-    const readings = {};
-    result.recordset.forEach(row => {
-      readings[row.SensorType] = row.ReadingValue;
+    const buildings = await pool.request().query('SELECT * FROM BUILDING');
+    const sensors = await pool.request().query('SELECT * FROM SENSOR');
+    const readings = await pool.request().query(`
+      SELECT TOP 50 * FROM SENSOR_READING 
+      ORDER BY Reading_Date_Time DESC
+    `);
+    const preferences = await pool.request().query('SELECT * FROM Report_Preference');
+    
+    res.json({
+      buildings: buildings.recordset,
+      sensors: sensors.recordset,
+      recentReadings: readings.recordset,
+      reportpreference: preferences.recordset
     });
-
-    res.json(readings);
   } catch (err) {
-    console.error("API error:", err);
     res.status(500).json({ error: err.message });
-  } finally {
-    sql.close();
   }
 });
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`)
-})
+  console.log(`Server running on http://localhost:${PORT}`);
+});
