@@ -172,11 +172,6 @@
             <option value="Motion">Motion</option>
             <option value="Water">Water</option>
           </select>
-          <label>Time:</label>
-          <select id="timeRange">
-            <option value="7">Last 7 Days</option>
-            <option value="30">Last 30 Days</option>
-          </select>
           <button id="generateGraph">Generate</button>
           <canvas id="sensorGraph"></canvas>
         </div>
@@ -287,7 +282,6 @@
     //function for generating a graph for the selected house
     function updateSensorGraph() {
       const sensorType = document.getElementById("sensorSelect").value; //gets the type of sensor selected by user
-      const days = parseInt(document.getElementById("timeRange").value); //gets the time interval the user selected (7days or 30 days)
 
       // Filter recent readings to include only relevant ones
       const filteredReadings = obj.recentReadings
@@ -306,7 +300,7 @@
                 return false; //Exclude reading if any condition is not met
               }
           })
-          .slice(0, days).reverse(); //Take only the first 'days' readings and most recent data at the end
+          .slice(0, 7).reverse(); //Take only the first weeks readings and most recent data at the end
 
       const labels = filteredReadings.map(r => new Date(r.Reading_Date_Time).toLocaleDateString('en-US', { weekday: 'short' }));
       const values = filteredReadings.map(r => r.Reading_Value);
