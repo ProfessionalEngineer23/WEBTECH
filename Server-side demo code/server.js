@@ -1,6 +1,7 @@
 import express from 'express';
 import sql from 'mssql';
 import cors from 'cors';
+import 'dotenv/config';
 
 const app = express(); //start an express application
 const PORT = 3000; //Server PORT defined
@@ -9,10 +10,10 @@ app.use(cors()); //for security
 
 //azure database configuration information, required for connecting to the database
 const dbConfig = {
-  server: 'webtech25.database.windows.net', 
-  database: 'Project',
-  user: 'Dovydas232',
-  password: 'Webtech25',
+  server: process.env.AZURE_SQL_SERVER,
+  database: process.env.AZURE_SQL_DATABASE,
+  user: process.env.AZURE_SQL_USER,
+  password: process.env.AZURE_SQL_PASSWORD,
   options: {
     encrypt: true, 
     trustServerCertificate: false
