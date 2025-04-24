@@ -90,7 +90,7 @@ function updateSensorGraph() {
             return false; //Exclude reading if any condition is not met
             }
         })
-        .slice(0, 7).reverse(); //Take only the first weeks readings and most recent data at the end
+        .slice(0, 7); //Take only the first weeks readings
 
     const labels = filteredReadings.map(r => new Date(r.Reading_Date_Time).toLocaleDateString('en-US', { weekday: 'short' }));
     const values = filteredReadings.map(r => r.Reading_Value);
@@ -127,7 +127,7 @@ document.getElementById("compareGraph").addEventListener("click", () => {
         else {
         return false; //conditions not matched
         }
-    }).slice(0, 7).reverse(); //takes only first days readings and most recent data at the end
+    }).slice(0, 7); //takes only first days readings
 
     return {
         labels: filtered.map(r => new Date(r.Reading_Date_Time).toLocaleDateString('en-US', { weekday: 'short' })),
